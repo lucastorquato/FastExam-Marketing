@@ -26,7 +26,7 @@ export const content = {
       ['03', 'A clear view of the class.', 'Go beyond a final score. Explore question accuracy and common wrong answers to see where another explanation could help.'],
       ['04', 'Ready for your next step.', 'Share a PDF report, work with an Excel spreadsheet, or export a CSV. Your records fit into the tools you already use.']
     ],
-    privacyTag: 'OFFLINE BY DESIGN', privacyTitle: 'Your classroom data<br>stays in your hands.', privacyIntro: 'Student records belong in your care. FastExam processes answers on your device, with no account, advertising, or analytics.', privacyPoints: ['No FastExam server storing student records', 'No connection needed for the core workflow', 'Export and restore your own local backups'], privacyLink: 'How FastExam handles data',
+    privacyTag: 'OFFLINE BY DESIGN', privacyTitle: 'Your classroom data<br>stays in your hands.', privacyIntro: 'Student records belong in your care. FastExam processes answers on your device, with no account or advertising. Purchase management uses RevenueCat.', privacyPoints: ['No FastExam server storing student records', 'No connection needed for the core workflow', 'Export and restore your own local backups'], privacyLink: 'How FastExam handles data',
     faqTag: 'A FEW GOOD QUESTIONS', faqTitle: 'Before the next bell.',
     faqs: [
       ['What devices can I use?', 'FastExam is designed for iPhone and iPad running iOS or iPadOS 17 or later. The app supports English, Brazilian Portuguese, and Spanish.'],
@@ -51,16 +51,7 @@ export const content = {
       ['If scanning is interrupted', 'Imported inbox pages stay pending across restarts. Open an unfinished page and choose Retry recognition. Camera pages are only imported after you tap Save.']
     ],
     contact: 'Need a hand?', contactText: 'Email us for help with FastExam. Please avoid including student names, grades, or unredacted answer sheets.',
-    dataTitle: 'Your data, on your device.', dataIntro: 'How the FastExam app handles classroom information.', dataSections: [
-      ['What the app stores', 'FastExam stores class and student names, student numbers, exam content, answer keys, scans, recognized and reviewed answers, corrections, grades, and result history in its private local storage. These records support the exam, review, reporting, and backup features.'],
-      ['On-device processing', 'Answer recognition runs on your device. FastExam does not send classroom records to its developer or a FastExam server. The app requires no account and contains no advertising, third-party analytics, or tracking technology.'],
-      ['Camera and photos', 'Camera access is used when you choose to scan. You can import selected photos instead. The system photo picker gives FastExam only the images you select, without access to your entire photo library. Change camera permission in iOS Settings.'],
-      ['Exports and backups', 'You choose whether to export reports, spreadsheets, or backups through the iOS share sheet. Other services handle exported files under their own policies. Backups include student records and scans and are not password-encrypted by FastExam. App records are excluded from automatic device backups: make regular manual backups and store them securely.'],
-      ['Keeping and deleting records', 'Records remain until you delete all local records or uninstall the app. Archiving hides classes or students without deleting their history. Restoring retains a local recovery snapshot; deleting all local records removes those snapshots too. Delete exported copies separately.'],
-      ['You remain in control', 'FastExam is a tool for teachers, not student accounts. Teachers choose which student information to enter and are responsible for protecting classroom records and following their school’s requirements.'],
-      ['About this website', 'This marketing website does not use analytics, advertising cookies, or forms that collect student data. The hosting provider may process connection information when serving the website. The app’s local storage is separate from this website.']
-    ],
-    back: 'Back to FastExam', updated: 'Updated November 1, 2026', notFound: 'This page is not in the answer key.', notFoundText: 'Let’s get you back to FastExam.'
+    back: 'Back to FastExam', notFound: 'This page is not in the answer key.', notFoundText: 'Let’s get you back to FastExam.'
   },
   pt: {
     lang: 'pt-BR', locale: 'pt_BR', title: 'FastExam — Menos correção. Mais ensino.',
@@ -89,7 +80,7 @@ export const content = {
       ['03', 'Um olhar sobre a turma.', 'Vá além da nota final. Veja o índice de acertos e os erros mais comuns para entender o que vale a pena explicar mais uma vez.'],
       ['04', 'Pronto para o próximo passo.', 'Compartilhe um relatório em PDF, trabalhe com uma planilha Excel ou exporte um CSV. Seus registros acompanham as ferramentas que você já usa.']
     ],
-    privacyTag: 'OFFLINE DESDE O INÍCIO', privacyTitle: 'Os dados da sua turma<br>ficam nas suas mãos.', privacyIntro: 'Os registros dos alunos ficam sob seus cuidados. O FastExam reconhece as respostas no próprio dispositivo, sem conta, anúncios ou análise de uso.', privacyPoints: ['Sem servidor do FastExam guardando dados dos alunos', 'Sem internet para as funções principais', 'Exporte e restaure seus próprios backups locais'], privacyLink: 'Como o FastExam cuida dos dados',
+    privacyTag: 'OFFLINE DESDE O INÍCIO', privacyTitle: 'Os dados da sua turma<br>ficam nas suas mãos.', privacyIntro: 'Os registros dos alunos ficam sob seus cuidados. O FastExam reconhece as respostas no próprio dispositivo, sem conta ou anúncios. O gerenciamento de compras usa o RevenueCat.', privacyPoints: ['Sem servidor do FastExam guardando dados dos alunos', 'Sem internet para as funções principais', 'Exporte e restaure seus próprios backups locais'], privacyLink: 'Como o FastExam cuida dos dados',
     faqTag: 'BOAS PERGUNTAS', faqTitle: 'Antes do próximo sinal.',
     faqs: [
       ['Em quais dispositivos posso usar?', 'O FastExam foi desenvolvido para iPhone e iPad com iOS ou iPadOS 17 ou posterior. O app está disponível em inglês, português do Brasil e espanhol.'],
@@ -114,15 +105,6 @@ export const content = {
       ['Digitalização interrompida', 'As páginas importadas permanecem pendentes mesmo após reiniciar. Abra uma página não concluída e tente o reconhecimento novamente. As páginas da câmera só são importadas depois de tocar em Salvar.']
     ],
     contact: 'Precisa de ajuda?', contactText: 'Envie um e-mail para tirar suas dúvidas sobre o FastExam. Evite incluir nomes de alunos, notas ou folhas de respostas com dados pessoais.',
-    dataTitle: 'Seus dados, no seu dispositivo.', dataIntro: 'Como o app FastExam lida com as informações da sua turma.', dataSections: [
-      ['O que o app armazena', 'O FastExam armazena nomes de turmas e alunos, números dos alunos, conteúdo das provas, gabaritos, imagens digitalizadas, respostas reconhecidas e revisadas, correções, notas e histórico em seu armazenamento local privado. Esses registros permitem preparar provas, revisar, gerar relatórios e fazer backups.'],
-      ['Processamento no dispositivo', 'O reconhecimento das respostas acontece no seu dispositivo. O FastExam não envia os registros da turma ao desenvolvedor nem a um servidor do FastExam. O app não exige conta e não contém anúncios, análise de uso de terceiros ou tecnologias de rastreamento.'],
-      ['Câmera e fotos', 'A câmera é utilizada quando você decide digitalizar. Você também pode importar fotos selecionadas. O seletor do sistema compartilha apenas as imagens escolhidas, sem dar acesso a toda a biblioteca. A permissão de câmera pode ser alterada nos Ajustes do iOS.'],
-      ['Exportações e backups', 'Você escolhe se deseja exportar relatórios, planilhas ou backups pelo menu de compartilhamento do iOS. Outros serviços tratam os arquivos conforme suas próprias políticas. Backups incluem registros e imagens dos alunos e não são criptografados com senha pelo FastExam. Os registros do app ficam fora do backup automático do dispositivo: faça backups manuais regularmente e guarde-os com segurança.'],
-      ['Retenção e exclusão', 'Os registros permanecem até você apagar todos os dados locais ou desinstalar o app. Arquivar oculta turmas ou alunos sem apagar o histórico. A restauração mantém um ponto de recuperação local, também removido ao apagar todos os registros. Cópias exportadas devem ser excluídas separadamente.'],
-      ['Você mantém o controle', 'O FastExam é uma ferramenta para professores, sem contas para alunos. O professor escolhe quais informações inserir e é responsável por proteger os registros e seguir os requisitos da escola.'],
-      ['Sobre este site', 'Este site de divulgação não usa análise de uso, cookies de publicidade ou formulários para coletar dados de alunos. O provedor de hospedagem pode processar informações de conexão ao servir o site. O armazenamento local do app é separado deste site.']
-    ],
-    back: 'Voltar ao FastExam', updated: 'Atualizado em 1º de novembro de 2026', notFound: 'Esta página não está no gabarito.', notFoundText: 'Vamos voltar ao FastExam.'
+    back: 'Voltar ao FastExam', notFound: 'Esta página não está no gabarito.', notFoundText: 'Vamos voltar ao FastExam.'
   }
 };

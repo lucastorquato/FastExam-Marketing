@@ -1,11 +1,16 @@
-import { mkdir, readFile, writeFile, cp, rm } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, cp, rm, lstat } from 'node:fs/promises';
 import { content } from './content.mjs';
+import { privacy } from './privacy.mjs';
 const config = JSON.parse(await readFile('site.config.json', 'utf8'));
 const siteURL = new URL(config.url.endsWith('/') ? config.url : `${config.url}/`);
-if (!['https:', 'http:'].includes(siteURL.protocol)) throw new Error('Invalid site URL');
-if (config.appStoreUrl && !/^https:\/\/(apps\.apple\.com|testflight\.apple\.com)\//.test(config.appStoreUrl)) throw new Error('Use an Apple App Store or TestFlight URL');
-if (config.supportEmail && !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(config.supportEmail)) throw new Error('Invalid support email');
+if (siteURL.protocol !== 'https:' || siteURL.username || siteURL.password || siteURL.search || siteURL.hash) throw new Error('Use an HTTPS site URL without credentials, a query, or a fragment');
+if (config.appStoreUrl) {
+  const appURL = new URL(config.appStoreUrl);
+  if (appURL.protocol !== 'https:' || !['apps.apple.com', 'testflight.apple.com'].includes(appURL.hostname) || appURL.username || appURL.password || appURL.port) throw new Error('Use an Apple App Store or TestFlight URL');
+}
+if (config.supportEmail && !/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(config.supportEmail)) throw new Error('Invalid support email');
 const e = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const securityMeta = `<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"><meta name="referrer" content="no-referrer">`;
 const icon = name => {
   const paths = {
     arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
@@ -20,12 +25,14 @@ const icon = name => {
 };
 function page(locale, kind='home') {
   const t = content[locale];
+  const policy = privacy[locale];
   const prefix = locale === 'en' ? '' : 'pt/';
   const file = kind === 'home' ? 'index.html' : `${kind}.html`;
   const base = locale === 'en' ? './' : '../';
   const other = locale === 'en' ? `./pt/${file}` : `../${file}`;
   const canonical = new URL(prefix + (kind === 'home' ? '' : file), siteURL).href;
-  const title = kind === 'home' ? t.title : `${kind === 'support' ? t.support : t.privacy} — FastExam`;
+  const title = kind === 'home' ? t.title : `${kind === 'support' ? t.support : policy.title} — FastExam`;
+  const description = kind === 'home' ? t.description : kind === 'support' ? t.supportIntro : policy.intro;
   const appAction = config.appStoreUrl ? `<a class="button primary" href="${e(config.appStoreUrl)}">${icon('apple')}${t.download}${icon('arrow')}</a>` : `<a class="button primary" href="#app">${t.cta}${icon('arrow')}</a>`;
   const brand = `<span class="brand-mark"><img src="${base}assets/app-icon-art.png" width="36" height="36" alt=""></span><span>FastExam<span class="brand-dot">.</span></span>`;
   const header = `<a class="skip" href="#main">${t.skip}</a><header class="site-header"><div class="container header-inner"><a class="brand" href="./index.html" aria-label="FastExam">${brand}</a><nav data-navigation id="navigation" aria-label="${locale === 'en' ? 'Main navigation' : 'Navegação principal'}"><a href="./index.html#how-it-works">${t.nav[0]}</a><a href="./index.html#features">${t.nav[1]}</a><a href="./index.html#questions">${t.nav[2]}</a></nav><div class="header-actions"><div class="languages" aria-label="${locale === 'en' ? 'Language' : 'Idioma'}"><a lang="en" href="${locale === 'en' ? './'+file : other}" ${locale === 'en' ? 'aria-current="page"' : ''}>EN</a><span aria-hidden="true">/</span><a lang="pt-BR" href="${locale === 'pt' ? './'+file : other}" ${locale === 'pt' ? 'aria-current="page"' : ''}>PT</a></div><a class="header-support" href="./support.html">${t.support}${icon('arrow')}</a><button class="menu-button" data-menu aria-expanded="false" aria-controls="navigation">${t.menu}<span aria-hidden="true">☰</span></button></div></div></header>`;
@@ -40,12 +47,28 @@ function page(locale, kind='home') {
   <section class="privacy-section container section"><div class="privacy-art" aria-hidden="true"><div class="lock-circle">${icon('lock')}</div><span class="privacy-dot dot-one"></span><span class="privacy-dot dot-two"></span><span class="privacy-dot dot-three"></span><span class="privacy-art-label">${locale === 'en' ? 'ON DEVICE. BY DESIGN.' : 'NO SEU DISPOSITIVO.'}</span></div><div class="privacy-copy"><p class="eyebrow">${t.privacyTag}</p><h2>${t.privacyTitle}</h2><p>${t.privacyIntro}</p><ul>${t.privacyPoints.map(p=>`<li>${icon('check')}${p}</li>`).join('')}</ul><a class="text-link" href="./privacy.html">${t.privacyLink}${icon('arrow')}</a></div></section>
   <section class="faq-section section" id="questions"><div class="container faq-layout"><div><p class="eyebrow">${t.faqTag}</p><h2>${t.faqTitle}</h2><a class="text-link" href="./support.html">${t.support}${icon('arrow')}</a></div><div class="faq-list">${t.faqs.map(([q,a])=>`<details><summary>${q}<span aria-hidden="true">+</span></summary><p>${a}</p></details>`).join('')}</div></div></section>
   <section class="closing container"><div class="closing-spark" aria-hidden="true">✳</div><p class="eyebrow">${t.endTag}</p><h2>${t.endTitle}</h2><p>${t.endText}</p>${config.appStoreUrl ? appAction : `<span class="coming-pill">${icon('apple')}${t.endStatus}</span>`}<a class="closing-link" href="./support.html">${t.endSupport}${icon('arrow')}</a></section></main>`;
-  const document = `<main id="main" class="document container"><a class="text-link back-link" href="./index.html">← ${t.back}</a><p class="eyebrow">${kind === 'support' ? t.support : t.privacy}</p><h1>${kind === 'support' ? t.supportTitle : t.dataTitle}</h1><p class="document-intro">${kind === 'support' ? t.supportIntro : t.dataIntro}</p>${kind === 'privacy' ? `<p class="updated">${t.updated}</p>` : ''}<div class="document-sections">${(kind === 'support' ? t.guides : t.dataSections).map(([title,body],i)=>`<section><span class="document-number">${String(i+1).padStart(2,'0')}</span><div><h2>${title}</h2><p>${body}</p></div></section>`).join('')}</div>${contact}</main>`;
-  return `<!doctype html><html lang="${t.lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${e(title)}</title><meta name="description" content="${e(kind === 'home' ? t.description : kind === 'support' ? t.supportIntro : t.dataIntro)}"><meta name="theme-color" content="#f9f9f2"><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="en" href="${new URL(kind === 'home'?'':file,siteURL).href}"><link rel="alternate" hreflang="pt-BR" href="${new URL('pt/'+(kind === 'home'?'':file),siteURL).href}"><link rel="alternate" hreflang="x-default" href="${new URL(kind === 'home'?'':file,siteURL).href}"><meta property="og:type" content="website"><meta property="og:site_name" content="FastExam"><meta property="og:title" content="${e(title)}"><meta property="og:description" content="${e(t.description)}"><meta property="og:url" content="${canonical}"><meta property="og:locale" content="${t.locale}"><link rel="icon" type="image/svg+xml" href="${base}assets/favicon.svg"><link rel="stylesheet" href="${base}assets/site.css"><script src="${base}assets/site.js" defer></script></head><body>${header}${kind === 'home' ? home : document}${footer}</body></html>`;
+  const document = kind === 'privacy'
+    ? `<main id="main" class="document privacy-document container"><a class="text-link back-link" href="./index.html">← ${t.back}</a><p class="eyebrow">FastExam · ${e(policy.title)}</p><h1>${e(policy.title)}</h1><p class="document-intro">${e(policy.intro)}</p><p class="updated"><time datetime="2026-11-03">${e(policy.updated)}</time></p>
+    <ul class="privacy-summary" aria-label="${e(policy.summaryLabel)}">${policy.summary.map(([title,body])=>`<li>${icon('check')}<div><strong>${e(title)}</strong><p>${e(body)}</p></div></li>`).join('')}</ul>
+    <nav class="document-contents" aria-labelledby="contents-title"><h2 id="contents-title">${e(policy.contents)}</h2><ol>${policy.sections.map(section=>`<li><a href="#${section.id}">${e(section.title)}</a></li>`).join('')}<li><a href="#privacy-contact">${e(policy.contactTitle)}</a></li></ol></nav>
+    <div class="document-sections">${policy.sections.map((section,i)=>`<section id="${section.id}" aria-labelledby="${section.id}-title"><span class="document-number" aria-hidden="true">${String(i+1).padStart(2,'0')}</span><div><h2 id="${section.id}-title">${e(section.title)}</h2>${section.paragraphs.map(body=>`<p>${e(body)}</p>`).join('')}${section.links ? `<ul class="policy-links">${section.links.map(([label,url])=>`<li><a href="${e(url)}">${e(label)}</a></li>`).join('')}</ul>` : ''}</div></section>`).join('')}</div>
+    <section class="contact-box" id="privacy-contact" aria-labelledby="privacy-contact-title"><h2 id="privacy-contact-title">${e(policy.contactTitle)}</h2><p>${e(policy.developer)}: <strong>${e(config.developerName)}</strong></p>${config.supportEmail ? `<p>${e(policy.contactText)}</p><a class="text-link" href="mailto:${e(config.supportEmail)}">${e(config.supportEmail)} ${icon('arrow')}</a><br>` : ''}<a class="text-link" href="./support.html">${e(policy.supportLink)} ${icon('arrow')}</a></section></main>`
+    : `<main id="main" class="document container"><a class="text-link back-link" href="./index.html">← ${t.back}</a><p class="eyebrow">${t.support}</p><h1>${t.supportTitle}</h1><p class="document-intro">${t.supportIntro}</p><div class="document-sections">${t.guides.map(([title,body],i)=>`<section><span class="document-number">${String(i+1).padStart(2,'0')}</span><div><h2>${title}</h2><p>${body}</p></div></section>`).join('')}</div>${contact}</main>`;
+  return `<!doctype html><html lang="${t.lang}"><head><meta charset="utf-8">${securityMeta}<meta name="viewport" content="width=device-width, initial-scale=1"><title>${e(title)}</title><meta name="description" content="${e(description)}"><meta name="theme-color" content="#f9f9f2"><link rel="canonical" href="${e(canonical)}"><link rel="alternate" hreflang="en" href="${e(new URL(kind === 'home'?'':file,siteURL).href)}"><link rel="alternate" hreflang="pt-BR" href="${e(new URL('pt/'+(kind === 'home'?'':file),siteURL).href)}"><link rel="alternate" hreflang="x-default" href="${e(new URL(kind === 'home'?'':file,siteURL).href)}"><meta property="og:type" content="website"><meta property="og:site_name" content="FastExam"><meta property="og:title" content="${e(title)}"><meta property="og:description" content="${e(description)}"><meta property="og:url" content="${e(canonical)}"><meta property="og:locale" content="${t.locale}"><link rel="icon" type="image/svg+xml" href="${base}assets/favicon.svg"><link rel="stylesheet" href="${base}assets/site.css"><script src="${base}assets/site.js" defer></script></head><body>${header}${kind === 'home' ? home : document}${footer}</body></html>`;
 }
 await rm('dist', { recursive:true, force:true });
 await mkdir('dist/pt', {recursive:true});
-await cp('assets', 'dist/assets', {recursive:true});
+// Copy only public site assets; never publish arbitrary files or symbolic links.
+for (const directory of ['assets', 'assets/en', 'assets/pt']) {
+  if (!(await lstat(directory)).isDirectory()) throw new Error(`Expected an asset directory: ${directory}`);
+}
+const publicAssets = ['app-icon-art.png', 'favicon.svg', 'site.css', 'site.js', '404.css', ...['en', 'pt'].flatMap(locale => ['classes', 'exams', 'results'].map(screen => `${locale}/${screen}.png`))];
+await mkdir('dist/assets/en', {recursive:true});
+await mkdir('dist/assets/pt', {recursive:true});
+for (const file of publicAssets) {
+  if (!(await lstat(`assets/${file}`)).isFile()) throw new Error(`Expected a regular public asset: ${file}`);
+  await cp(`assets/${file}`, `dist/assets/${file}`);
+}
 for (const locale of ['en','pt']) for (const kind of ['home','support','privacy']) {
   await writeFile(`dist/${locale==='pt'?'pt/':''}${kind==='home'?'index':kind}.html`, page(locale, kind));
 }
@@ -53,5 +76,5 @@ await writeFile('dist/.nojekyll','');
 const paths = ['', 'support.html', 'privacy.html', 'pt/', 'pt/support.html', 'pt/privacy.html'];
 await writeFile('dist/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${paths.map(path=>`<url><loc>${e(new URL(path,siteURL).href)}</loc></url>`).join('')}</urlset>`);
 await writeFile('dist/robots.txt',`User-agent: *\nAllow: /\nSitemap: ${new URL('sitemap.xml',siteURL).href}\n`);
-await writeFile('dist/404.html', `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Page not found — FastExam</title><style>body{background:#f9f9f2;color:#153c39;font:18px system-ui;padding:12vw;line-height:1.7}h1{font-size:clamp(2rem,6vw,4rem);line-height:1.1;max-width:700px}a{color:inherit}</style><body><p>FastExam · 404</p><h1>This page is not in the answer key.</h1><p>Esta página não está no gabarito.</p><a href="${e(siteURL.href)}">Back to FastExam / Voltar ao FastExam →</a></body></html>`);
+await writeFile('dist/404.html', `<!doctype html><html lang="en"><meta charset="utf-8">${securityMeta}<meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Page not found — FastExam</title><link rel="stylesheet" href="${e(new URL('assets/404.css',siteURL).href)}"><body><p>FastExam · 404</p><h1>This page is not in the answer key.</h1><p>Esta página não está no gabarito.</p><a href="${e(siteURL.href)}">Back to FastExam / Voltar ao FastExam →</a></body></html>`);
 console.log('Built 6 localized pages, 404 page, and assets in dist/');
